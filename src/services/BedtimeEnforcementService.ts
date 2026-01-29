@@ -62,13 +62,14 @@ export class BedtimeEnforcementService extends EventEmitter {
         return;
       }
 
-      // Check if already showing the block screen
       const currentApp = await adbManager.apps.getRunningApp();
+
+      // If browser is showing, block screen is displayed - don't re-launch
       if (this.isBlockScreenApp(currentApp)) {
         return;
       }
 
-      // Show the appropriate block screen
+      // User is not in browser - show block screen
       await this.showBlockScreen(this.currentBlockReason);
     } catch (error) {
       console.error('Bedtime enforcement error:', error);
@@ -77,17 +78,34 @@ export class BedtimeEnforcementService extends EventEmitter {
 
   private isBlockScreenApp(packageName: string | null): boolean {
     if (!packageName) return false;
-    // Browser packages that might be showing our block screen
+
+    // Known browser packages
     const browserPackages = [
       'com.android.chrome',
+      'com.chrome.beta',
+      'com.chrome.dev',
       'com.google.android.browser',
+      'com.android.browser',
       'org.chromium.webview_shell',
       'com.opera.browser',
+      'com.opera.mini.native',
       'org.mozilla.firefox',
+      'org.mozilla.fenix',
       'com.brave.browser',
       'com.microsoft.emmx',
+      'com.amazon.cloud9',
+      'com.vewd.core.integration.dia',
+      'tv.plex.labs.web',
     ];
-    return browserPackages.includes(packageName);
+
+    if (browserPackages.includes(packageName)) {
+      return true;
+    }
+
+    // Also check for common browser-related patterns
+    const browserPatterns = ['browser', 'chrome', 'firefox', 'webview'];
+    const lowerName = packageName.toLowerCase();
+    return browserPatterns.some((pattern) => lowerName.includes(pattern));
   }
 
   private async showBlockScreen(reason: BlockReason): Promise<void> {
@@ -95,13 +113,13 @@ export class BedtimeEnforcementService extends EventEmitter {
     const url = `${this.serverUrl}${screenPath}`;
 
     try {
-      // Force stop current app first
+      // Force stop current app first (but not browsers)
       const currentApp = await adbManager.apps.getRunningApp();
       if (currentApp && !this.isBlockScreenApp(currentApp)) {
         await adbManager.apps.forceStop(currentApp);
       }
 
-      // Launch the block screen
+      // Launch the block screen URL
       await adbManager.apps.launchUrl(url);
 
       this.emit('block_screen_shown', { reason, url });
