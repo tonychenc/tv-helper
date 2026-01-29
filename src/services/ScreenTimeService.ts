@@ -284,6 +284,50 @@ export class ScreenTimeService extends EventEmitter {
 
     return false;
   }
+
+  getMinutesUntilBedtime(): number | null {
+    const now = new Date();
+    const currentDay = now.getDay();
+
+    const bedtimeSchedules = db
+      .select()
+      .from(schedules)
+      .where(and(eq(schedules.enabled, true), eq(schedules.type, 'bedtime')))
+      .all();
+
+    let minMinutes: number | null = null;
+
+    for (const schedule of bedtimeSchedules) {
+      if (!schedule.startTime) {
+        continue;
+      }
+
+      const days = schedule.daysOfWeek ? JSON.parse(schedule.daysOfWeek) : [0, 1, 2, 3, 4, 5, 6];
+      if (!days.includes(currentDay)) {
+        continue;
+      }
+
+      const [startHour, startMinute] = schedule.startTime.split(':').map(Number);
+
+      // Create a date for bedtime start today
+      const bedtimeStart = new Date(now);
+      bedtimeStart.setHours(startHour, startMinute, 0, 0);
+
+      // If bedtime has already passed today, skip
+      if (bedtimeStart <= now) {
+        continue;
+      }
+
+      const diffMs = bedtimeStart.getTime() - now.getTime();
+      const diffMinutes = Math.floor(diffMs / 60000);
+
+      if (minMinutes === null || diffMinutes < minMinutes) {
+        minMinutes = diffMinutes;
+      }
+    }
+
+    return minMinutes;
+  }
 }
 
 export const screenTimeService = new ScreenTimeService();

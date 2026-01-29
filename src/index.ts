@@ -5,7 +5,6 @@ import { fileURLToPath } from 'url';
 import { config } from './config/index.js';
 import { initializeDatabase, getSetting } from './db/index.js';
 import apiRoutes from './api/routes/index.js';
-import blockScreenRoutes from './api/routes/block-screen.js';
 import { setupWebSocket } from './api/websocket/handler.js';
 import { pinAuth } from './api/middleware/auth.js';
 import { rateLimit } from './api/middleware/rateLimit.js';
@@ -34,9 +33,6 @@ async function main() {
   // API routes with optional PIN auth
   app.use('/api/v1', pinAuth, apiRoutes);
 
-  // Block screen routes (no auth - served to TV)
-  app.use('/block-screen', blockScreenRoutes);
-
   // Serve static frontend files
   const frontendPath = path.join(__dirname, '../frontend/dist');
   app.use(express.static(frontendPath));
@@ -56,9 +52,6 @@ async function main() {
   screenTimeService.start();
   console.log('Screen time service started');
 
-  // Compute server URL for block screens (TV needs to reach this URL)
-  const serverUrl = config.serverUrl || `http://${config.host}:${config.port}`;
-
   // Start usage monitoring when connected
   adbManager.onStatusChange((status) => {
     if (status.state === 'connected') {
@@ -68,8 +61,8 @@ async function main() {
       // Enforce block rules on connect
       appBlockingService.enforceBlockRules();
 
-      // Start bedtime enforcement with server URL for block screens
-      bedtimeEnforcementService.start(serverUrl);
+      // Start bedtime enforcement
+      bedtimeEnforcementService.start();
       console.log('Bedtime enforcement started');
     } else if (status.state === 'disconnected' || status.state === 'error') {
       usageMonitorService.stop();

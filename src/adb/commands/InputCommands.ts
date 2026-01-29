@@ -122,4 +122,25 @@ export class InputCommands {
   async playPause(): Promise<CommandResult> {
     return this.sendKeyEvent(KeyCodes.MEDIA_PLAY_PAUSE);
   }
+
+  async playNotificationSound(): Promise<CommandResult> {
+    // Play the default notification sound on the TV
+    return this.executor.execute(
+      'shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///system/media/audio/ui/Dock.ogg'
+    );
+  }
+
+  async playAlarmSound(): Promise<CommandResult> {
+    // Use media player to play an alarm-like sound
+    return this.executor.execute(
+      'shell am start -a android.intent.action.VIEW -d file:///system/media/audio/ringtones/Ring_Synth_04.ogg -t audio/ogg'
+    );
+  }
+
+  async speakText(text: string): Promise<CommandResult> {
+    // Use Android TTS to speak text (requires TTS engine)
+    return this.executor.execute(
+      `shell am broadcast -a android.speech.tts.TTS_QUEUE_PROCESSING_COMPLETED -e text "${text}"`
+    );
+  }
 }
