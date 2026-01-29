@@ -3,6 +3,7 @@ import { z } from 'zod';
 const configSchema = z.object({
   port: z.number().default(3000),
   host: z.string().default('127.0.0.1'),
+  serverUrl: z.string().optional(),
   dbPath: z.string().default('./data/tv-helper.db'),
   adb: z.object({
     defaultPort: z.number().default(5555),
@@ -23,6 +24,7 @@ export type Config = z.infer<typeof configSchema>;
 export const config: Config = configSchema.parse({
   port: parseInt(process.env.PORT || '3000', 10),
   host: process.env.HOST || '127.0.0.1',
+  serverUrl: process.env.SERVER_URL,
   dbPath: process.env.DB_PATH || './data/tv-helper.db',
   adb: {
     defaultPort: parseInt(process.env.ADB_PORT || '5555', 10),

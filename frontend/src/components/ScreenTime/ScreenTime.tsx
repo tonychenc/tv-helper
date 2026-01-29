@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useApi, type Schedule, type NewSchedule } from '../../hooks/useApi';
+type ScheduleUpdate = Partial<NewSchedule>;
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -36,7 +37,7 @@ export default function ScreenTime() {
     }
   };
 
-  const handleUpdate = async (id: string, data: Partial<Schedule>) => {
+  const handleUpdate = async (id: string, data: ScheduleUpdate) => {
     try {
       await api.updateSchedule(id, data);
       await loadSchedules();
@@ -171,19 +172,7 @@ export default function ScreenTime() {
           schedule={editingSchedule}
           onSubmit={(data) => {
             if (editingSchedule) {
-              // Convert daysOfWeek for update
-              const updateData: Partial<Schedule> = {
-                name: data.name,
-                type: data.type,
-                enabled: data.enabled,
-                startTime: data.startTime || null,
-                endTime: data.endTime || null,
-                dailyLimitMinutes: data.dailyLimitMinutes || null,
-                daysOfWeek: data.daysOfWeek ? JSON.stringify(data.daysOfWeek) : null,
-                packageName: data.packageName || null,
-                action: data.action || 'block',
-              };
-              handleUpdate(editingSchedule.id, updateData);
+              handleUpdate(editingSchedule.id, data);
             } else {
               handleCreate(data);
             }

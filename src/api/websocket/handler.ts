@@ -63,8 +63,12 @@ export function setupWebSocket(server: Server): WebSocketServer {
   });
 
   // Bedtime enforcement events
-  bedtimeEnforcementService.on('bedtime_screen_off', (data) => {
-    broadcast({ type: 'bedtime_screen_off', data });
+  bedtimeEnforcementService.on('block_screen_shown', (data) => {
+    broadcast({ type: 'block_screen_shown', data });
+  });
+
+  bedtimeEnforcementService.on('block_screen_fallback', (data) => {
+    broadcast({ type: 'block_screen_fallback', data });
   });
 
   wss.on('connection', (ws, req) => {

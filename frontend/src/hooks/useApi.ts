@@ -103,7 +103,7 @@ export function useApi() {
     });
   }, []);
 
-  const updateSchedule = useCallback(async (id: string, schedule: Partial<Schedule>) => {
+  const updateSchedule = useCallback(async (id: string, schedule: Partial<NewSchedule>) => {
     return fetchApi<{ success: boolean; schedule: Schedule }>(`/schedules/${id}`, {
       method: 'PUT',
       body: JSON.stringify(schedule),

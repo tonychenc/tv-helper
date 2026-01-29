@@ -78,4 +78,10 @@ export class AppCommands {
   async clearAppData(packageName: string): Promise<CommandResult> {
     return this.executor.execute(`shell pm clear ${packageName}`);
   }
+
+  async launchUrl(url: string): Promise<CommandResult> {
+    return this.executor.execute(
+      `shell am start -a android.intent.action.VIEW -d "${url}"`
+    );
+  }
 }
