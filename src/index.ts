@@ -3,7 +3,7 @@ import { createServer } from 'http';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { config } from './config/index.js';
-import { initializeDatabase } from './db/index.js';
+import { initializeDatabase, getSetting } from './db/index.js';
 import apiRoutes from './api/routes/index.js';
 import blockScreenRoutes from './api/routes/block-screen.js';
 import { setupWebSocket } from './api/websocket/handler.js';
@@ -79,7 +79,7 @@ async function main() {
   });
 
   // Start server
-  server.listen(config.port, config.host, () => {
+  server.listen(config.port, config.host, async () => {
     console.log(`\nTV Helper is running!`);
     console.log(`  Local:    http://${config.host}:${config.port}`);
     console.log(`  API:      http://${config.host}:${config.port}/api/v1`);
@@ -91,11 +91,28 @@ async function main() {
       console.log(`\n  Warning: No PIN configured, API is unprotected`);
     }
 
-    console.log(`\nTo connect to your Android TV:`);
-    console.log(`  1. Enable ADB over WiFi on your TV`);
-    console.log(`     Settings > Developer Options > Network debugging`);
-    console.log(`  2. POST to /api/v1/device/connect with {"host": "TV_IP_ADDRESS"}`);
-    console.log(`  3. Accept the connection prompt on your TV\n`);
+    // Try to reconnect to last device
+    const lastDevice = getSetting('lastDevice');
+    if (lastDevice) {
+      try {
+        const { host, port } = JSON.parse(lastDevice);
+        console.log(`\nReconnecting to last device: ${host}:${port || 5555}...`);
+        const success = await adbManager.connect(host, port);
+        if (success) {
+          console.log('Reconnected successfully!');
+        } else {
+          console.log('Reconnection failed. Device may be offline.');
+        }
+      } catch (error) {
+        console.log('Failed to reconnect to last device:', error);
+      }
+    } else {
+      console.log(`\nTo connect to your Android TV:`);
+      console.log(`  1. Enable ADB over WiFi on your TV`);
+      console.log(`     Settings > Developer Options > Network debugging`);
+      console.log(`  2. POST to /api/v1/device/connect with {"host": "TV_IP_ADDRESS"}`);
+      console.log(`  3. Accept the connection prompt on your TV\n`);
+    }
   });
 
   // Graceful shutdown

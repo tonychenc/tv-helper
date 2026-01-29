@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { adbManager } from '../../adb/AdbManager.js';
 import { auditService } from '../../services/AuditService.js';
+import { setSetting } from '../../db/index.js';
 import { validateBody, connectSchema } from '../middleware/validation.js';
 
 const router = Router();
@@ -29,6 +30,9 @@ router.post('/connect', validateBody(connectSchema), async (req, res) => {
     const success = await adbManager.connect(host, port);
 
     if (success) {
+      // Save last connected device for auto-reconnect on restart
+      setSetting('lastDevice', JSON.stringify({ host, port }));
+
       await auditService.log('device_connect', host, { port });
       const status = adbManager.getStatus();
       res.json({ success: true, status });

@@ -64,11 +64,25 @@ export function initializeDatabase() {
       timestamp INTEGER NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_usage_logs_date ON usage_logs(date);
     CREATE INDEX IF NOT EXISTS idx_usage_logs_package ON usage_logs(package_name);
     CREATE INDEX IF NOT EXISTS idx_block_rules_package ON block_rules(package_name);
     CREATE INDEX IF NOT EXISTS idx_schedules_enabled ON schedules(enabled);
   `);
+}
+
+export function getSetting(key: string): string | null {
+  const result = sqlite.prepare('SELECT value FROM settings WHERE key = ?').get(key) as { value: string } | undefined;
+  return result?.value ?? null;
+}
+
+export function setSetting(key: string, value: string): void {
+  sqlite.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)').run(key, value);
 }
 
 export { sqlite };

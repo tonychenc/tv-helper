@@ -48,6 +48,11 @@ export const auditLogs = sqliteTable('audit_logs', {
   timestamp: integer('timestamp', { mode: 'timestamp' }).notNull(),
 });
 
+export const settings = sqliteTable('settings', {
+  key: text('key').primaryKey(),
+  value: text('value').notNull(),
+});
+
 export type App = typeof apps.$inferSelect;
 export type NewApp = typeof apps.$inferInsert;
 export type BlockRule = typeof blockRules.$inferSelect;
