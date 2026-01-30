@@ -116,6 +116,12 @@ export function useApi() {
     });
   }, []);
 
+  const playAudioReminder = useCallback(async () => {
+    return fetchApi<{ success: boolean; message: string; audioPath: string }>('/remote/test/audio-reminder', {
+      method: 'POST',
+    });
+  }, []);
+
   return {
     connect,
     disconnect,
@@ -134,6 +140,7 @@ export function useApi() {
     createSchedule,
     updateSchedule,
     deleteSchedule,
+    playAudioReminder,
   };
 }
 

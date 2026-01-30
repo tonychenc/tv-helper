@@ -16,6 +16,7 @@ const configSchema = z.object({
   pin: z.string().optional(),
   bedtime: z.object({
     enforcementInterval: z.number().default(3000),
+    reminderAudioPath: z.string().default('/sdcard/Download/ringtone-030-437513.mp3'),
   }),
 });
 
@@ -37,5 +38,6 @@ export const config: Config = configSchema.parse({
   pin: process.env.PIN,
   bedtime: {
     enforcementInterval: parseInt(process.env.BEDTIME_ENFORCEMENT_INTERVAL || '3000', 10),
+    reminderAudioPath: process.env.BEDTIME_REMINDER_AUDIO_PATH || '/sdcard/Download/ringtone-030-437513.mp3',
   },
 });

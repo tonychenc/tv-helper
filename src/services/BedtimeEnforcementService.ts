@@ -67,14 +67,7 @@ export class BedtimeEnforcementService extends EventEmitter {
 
   private async playWarningSound(): Promise<void> {
     try {
-      // Play notification sound multiple times to get attention
-      await adbManager.input.playNotificationSound();
-
-      // Wait a bit and play again
-      setTimeout(async () => {
-        await adbManager.input.playNotificationSound();
-      }, 1000);
-
+      await adbManager.input.playAudio(config.bedtime.reminderAudioPath);
       console.log('Bedtime warning sound played');
     } catch (error) {
       console.error('Failed to play warning sound:', error);

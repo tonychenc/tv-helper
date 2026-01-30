@@ -55,6 +55,16 @@ export default function Remote({ isConnected }: RemoteProps) {
     }
   };
 
+  const handleAudioReminder = async () => {
+    if (!isConnected) return;
+
+    try {
+      await api.playAudioReminder();
+    } catch (error) {
+      console.error('Failed to play audio reminder:', error);
+    }
+  };
+
   if (!isConnected) {
     return (
       <div className="text-center py-12">
@@ -137,6 +147,16 @@ export default function Remote({ isConnected }: RemoteProps) {
           <Button keyName="volume_down" label="Vol-" />
           <Button keyName="mute" label="Mute" />
           <Button keyName="volume_up" label="Vol+" />
+        </div>
+
+        {/* Test Audio Reminder */}
+        <div className="pt-4 border-t border-gray-700">
+          <button
+            onClick={handleAudioReminder}
+            className="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded transition-colors"
+          >
+            Test Audio Reminder
+          </button>
         </div>
       </div>
 

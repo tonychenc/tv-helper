@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { remoteControlService, type RemoteKey } from '../../services/RemoteControlService.js';
 import { auditService } from '../../services/AuditService.js';
+import { adbManager } from '../../adb/AdbManager.js';
+import { config } from '../../config/index.js';
 import {
   validateBody,
   keyEventSchema,
@@ -136,6 +138,21 @@ router.get('/volume', async (_req, res) => {
     res.json({ volume: level });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to get volume';
+    res.status(500).json({ error: message });
+  }
+});
+
+router.post('/test/audio-reminder', async (_req, res) => {
+  try {
+    if (!adbManager.isConnected()) {
+      res.status(400).json({ error: 'Device not connected' });
+      return;
+    }
+
+    await adbManager.input.playAudio(config.bedtime.reminderAudioPath);
+    res.json({ success: true, message: 'Audio reminder sent', audioPath: config.bedtime.reminderAudioPath });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to play audio';
     res.status(500).json({ error: message });
   }
 });
